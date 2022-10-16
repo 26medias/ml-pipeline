@@ -1,23 +1,46 @@
 import sys 
 sys.path.append('../..')
 
-from core import pipeline
+from ml_pipeline.stream import Stream
+from ml_pipeline.pipeline import Pipeline
+from ml_pipeline.models import Models
 
-config = {
-  "stream": {
+from processors.audio.transcription.transcription import Transcription
+
+# Init the models
+models = Models({
+  "models": {
+    "transcribe": {
+      "model": "audio.transcription",
+      "config": {
+        "size": "small"
+      }
+    },
+    "segmentation": {
+      "model": "audio.segmentation",
+      "config": {}
+    }
+  }
+})
+models.init()
+
+# Init the streams
+stream = Stream(config={
+  "streams": {
     "audio": {
       "name":   "mic",
       "device": "pulse",
-      "rate":   16000
+      "rate":   16000,
+      "block":  512
     }
   }
-}
+})
+stream.init()
 
+# Create the processor
+transcribe_processor = Transcription(model=models.get("transcribe"))
+# Create the pipeline
+transcribe_pipeline = Pipeline(processor=transcribe_processor, order="FIFO")
 
-def micProcessor(streamName, audio_frame):
-  print("$$> ", streamName, audio_frame)
-
-
-app = pipeline.Pipeline(config=config)
-app.init()
-app.listen("mic", micProcessor)
+# Connect the pipeline to the mic audio stream
+stream.connect("mic", transcribe_pipeline)

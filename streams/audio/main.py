@@ -20,7 +20,7 @@ class Stream:
   def getStream(self):
     index = self.getDeviceId(name=self.config["device"])
     print("Using device #"+str(index))
-    stream = self.audio.open(format=pyaudio.paInt16, channels=1, rate=self.config["rate"], input=True, input_device_index = index, frames_per_buffer=self.config["rate"])
+    stream = self.audio.open(format=pyaudio.paInt16, channels=1, rate=self.config["rate"], input=True, input_device_index = index, frames_per_buffer=self.config["block"])
     return stream
   
   def start(self):
@@ -43,8 +43,8 @@ class Stream:
   def record(self, duration=5):
     print("Recording for ",duration,"seconds")
     Recordframes = []
-    for i in range(0, duration):
-      data = self.stream.read(self.config["rate"])
+    for i in range(0, int(self.config["rate"]/self.config["block"]*duration)):
+      data = self.stream.read(self.config["block"])
       Recordframes.append(data)
     print("Recording stopped.")
     return Recordframes

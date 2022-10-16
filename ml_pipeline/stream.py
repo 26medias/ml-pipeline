@@ -7,17 +7,17 @@ from queue import  Queue
 import sys 
 sys.path.append('../..')
 
-class Pipeline:
+class Stream:
   def __init__(self, config={}):
     self.config = config
     self.callbacks = {}
     self.streams = {}
-    print("Pipeline starting...")
+    print("Stream starting...")
 
   def init(self):
-    for key in self.config["stream"]:
+    for key in self.config["streams"]:
       print(">", key)
-      self.createStream(key, self.config["stream"][key])
+      self.createStream(key, self.config["streams"][key])
   
   def createStream(self, name, config):
     lib = importlib.import_module("streams."+name+".main")
@@ -34,6 +34,9 @@ class Pipeline:
 
   def listen(self, name, callback):
     self.callbacks[name].append(callback)
+
+  def connect(self, name, pipeline):
+    self.listen(name, pipeline.receive)
   
   def broadcast(self, name, data):
     if name in self.callbacks and len(self.callbacks[name])>0:
