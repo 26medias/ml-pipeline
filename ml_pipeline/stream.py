@@ -15,22 +15,23 @@ class Stream:
     print("Stream starting...")
 
   def init(self):
-    for key in self.config["streams"]:
-      print(">", key)
-      self.createStream(key, self.config["streams"][key])
+    for name in self.config["streams"]:
+      print(">", name)
+      config = self.config["streams"][name]
+      self.createStream(name, config)
   
   def createStream(self, name, config):
-    lib = importlib.import_module("streams."+name+".main")
+    lib = importlib.import_module("streams."+config["type"]+".main")
     instance = getattr(lib, "Stream")(self, config)
-    self.streams[config["name"]] = {
-      "config": instance,
-      "stream": lib,
+    self.streams[name] = {
+      "config": config,
+      "stream": instance,
       "queue":  Queue(),
-      "thread": threading.Thread(target=instance.stream, args=(config["name"],))
+      "thread": threading.Thread(target=instance.stream, args=(name,))
     }
-    if config["name"] not in self.callbacks:
-      self.callbacks[config["name"]] = []
-    self.streams[config["name"]]["thread"].start()
+    if name not in self.callbacks:
+      self.callbacks[name] = []
+    self.streams[name]["thread"].start()
 
   def listen(self, name, callback):
     self.callbacks[name].append(callback)

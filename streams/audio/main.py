@@ -1,5 +1,6 @@
 import pyaudio
 import wave
+import time
 
 class Stream:
   def __init__(self, core, config):
@@ -69,4 +70,8 @@ class Stream:
     print("----", name)
     self.start()
     while True:
-      self.core.broadcast(name, self.stream.read(self.config["rate"]))
+      timestamp = time.time()-1 # 
+      self.core.broadcast(name, {
+        "data": self.stream.read(self.config["rate"]),
+        "timestamp": timestamp
+      })
